@@ -1,0 +1,9 @@
+{
+  "typeform_uid": "TYPEFORM_FORM_UID",
+  "typeform_key": "TYPEFORM_API_KEY",
+  "typeform_email_field": "EMAIL_FIELD_NAME",
+  "typeform_name_field": "NAME_FIELD_NAME",
+  "typeform_lastname_field": "LAST_NAME_FIELD_NAME",
+  "slack_channel_name": "SLACK_CHANNEL_NAME",
+  "slack_token_name": "SLACK_TOKEN"
+}
