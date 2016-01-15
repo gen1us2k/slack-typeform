@@ -16,8 +16,38 @@ type Config struct {
 	LastNameField string `json:"typeform_lastname_field"`
 	SlackChannel string `json:"slack_channel_name"`
 	SlackToken string `json:"slack_token_name"`
+	Interval int64 `json:"check_interval"`
 }
 
+type Response struct {
+	Id string
+	Answers map[string] string
+}
+type Answer struct {
+	Responses []Response
+}
+
+func inviteAll(config Config){
+	typeFormUrl := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix() - config.Interval)
+	fmt.Println(typeFormUrl)
+	res, err := http.Get(typeFormUrl)
+	if err != nil {
+		fmt.Println(err)
+	}
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	fmt.Println(string(body))
+	var answer Answer
+	json.Unmarshal(body, &answer)
+	fmt.Println(answer.Responses[0].Answers)
+	fmt.Println("FirstName is " + answer.Responses[0].Answers[config.NameField])
+	time.Sleep(1 * time.Second)
+}
 func main()  {
 	dat, err := ioutil.ReadFile("config.json")
 	if err != nil {
@@ -34,8 +64,8 @@ func main()  {
 	go func() {
 		for {
 
-			fmt.Println("yay")
-			time.Sleep(1 * time.Second)
+			inviteAll(config)
+
 		}
 	}()
 	startHttpServer()
