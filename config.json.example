@@ -5,5 +5,9 @@
   "typeform_name_field": "NAME_FIELD_NAME",
   "typeform_lastname_field": "LAST_NAME_FIELD_NAME",
   "slack_channel_name": "SLACK_CHANNEL_NAME",
-  "slack_token_name": "SLACK_TOKEN"
+  "slack_token_name": "SLACK_TOKEN",
+  "check_interval": UPDATE_INTERVAL,
+  "http_port": "HTTP_LISTEN_PORT",
+  "bind_addr": "BIND_IP_ADDRESS"
+
 }
