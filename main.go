@@ -6,6 +6,8 @@ import (
 	"time"
 	"io/ioutil"
 	"encoding/json"
+	"strings"
+	"net/url"
 )
 
 type Config struct {
@@ -27,6 +29,7 @@ type Answer struct {
 	Responses []Response
 }
 
+
 func inviteAll(config Config){
 	typeFormUrl := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix() - config.Interval)
 	fmt.Println(typeFormUrl)
@@ -34,6 +37,7 @@ func inviteAll(config Config){
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
@@ -41,12 +45,33 @@ func inviteAll(config Config){
 			fmt.Println(err)
 		}
 	}
-	fmt.Println(string(body))
+
 	var answer Answer
 	json.Unmarshal(body, &answer)
-	fmt.Println(answer.Responses[0].Answers)
-	fmt.Println("FirstName is " + answer.Responses[0].Answers[config.NameField])
-	time.Sleep(1 * time.Second)
+
+	for _, user := range answer.Responses {
+		fmt.Printf("Sending invite to %s with email %s", user.Answers[config.NameField] + user.Answers[config.LastNameField], user.Answers[config.EmailField])
+		slackUrl := fmt.Sprintf("https://%s.slack.com/api/users.admin.invite", config.SlackChannel)
+		invite := url.Values{}
+		invite.Add("email", user.Answers[config.EmailField])
+		invite.Add("first_name", user.Answers[config.NameField])
+		invite.Add("last_name", user.Answers[config.LastNameField])
+		invite.Add("token", config.SlackToken)
+		invite.Add("set_active", "true")
+		req, err := http.NewRequest("POST", slackUrl, strings.NewReader(invite.Encode()))
+		if err != nil {
+			fmt.Println(err)
+		}
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
+	}
+
+	time.Sleep(time.Duration(config.Interval) * time.Second)
 }
 func main()  {
 	dat, err := ioutil.ReadFile("config.json")
@@ -59,7 +84,6 @@ func main()  {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Print(config.SlackToken)
 
 	go func() {
 		for {
