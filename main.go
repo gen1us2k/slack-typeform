@@ -59,7 +59,7 @@ func inviteAll(config Config){
 	json.Unmarshal(body, &answer)
 
 	for _, user := range answer.Responses {
-		log.Println("Sending invite to %s %s with email %s", user.Answers[config.NameField], user.Answers[config.LastNameField], user.Answers[config.EmailField])
+		log.Printf("Sending invite to %s %s with email %s\n", user.Answers[config.NameField], user.Answers[config.LastNameField], user.Answers[config.EmailField])
 		slackURL := fmt.Sprintf("https://%s.slack.com/api/users.admin.invite", config.SlackChannel)
 
 		invite := url.Values{}
