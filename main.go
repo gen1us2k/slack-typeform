@@ -12,6 +12,7 @@ import (
 	"log"
 )
 
+// Service configuration
 type Config struct {
 	TUID          string 	`json:"typeform_uid"`
 	TKey          string 	`json:"typeform_key"`
@@ -25,11 +26,13 @@ type Config struct {
 	IPAddr        string 	`json:"bind_addr"`
 }
 
+// Parse Answers from typeform
 type Response struct {
-	Id string
+	ID string
 	Answers map[string] string
 }
 
+// Parse Response from typeform
 type Answer struct {
 	Responses []Response
 }
