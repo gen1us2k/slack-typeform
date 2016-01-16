@@ -37,7 +37,6 @@ type Answer struct {
 	Responses []Response
 }
 
-
 func inviteAll(config Config){
 	log.Println("inviteAll")
 	typeFormURL := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix() - config.Interval)
@@ -106,13 +105,17 @@ func main()  {
 		}
 	}()
 
-	http.HandleFunc("/", mainPage)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+		mainPage(w, r, config.TUID)
+	})
 	listenAddr := fmt.Sprintf("%s:%s", config.IPAddr, config.ListenPort)
-	fmt.Println(listenAddr)
+	fmt.Printf("Listening on: %s\n", listenAddr)
 	http.ListenAndServe(listenAddr, nil)
 }
 
-func mainPage(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles("public/index.html", nil)  // Parse template file.
-	t.Execute(w, "GGGGG")
+func mainPage(w http.ResponseWriter, r *http.Request, UID string) {
+	data := make(map[string] string)
+	data["UID"] = UID
+	t, _ := template.ParseFiles("public/index.html")
+	t.Execute(w, data)
 }
