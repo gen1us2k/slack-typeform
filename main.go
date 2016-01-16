@@ -6,28 +6,30 @@ import (
 	"time"
 	"io/ioutil"
 	"encoding/json"
+	"html/template"
 	"strings"
 	"net/url"
 	"log"
 )
 
 type Config struct {
-	TUID string 	`json:"typeform_uid"`
-	TKey string `json:"typeform_key"`
-	EmailField string `json:"typeform_email_field"`
-	NameField string `json:"typeform_name_field"`
-	LastNameField string `json:"typeform_lastname_field"`
-	SlackChannel string `json:"slack_channel_name"`
-	SlackToken string `json:"slack_token_name"`
-	Interval int64 `json:"check_interval"`
-	ListenPort string `json:"http_port"`
-	IpAddr string `json:"bind_addr"`
+	TUID          string 	`json:"typeform_uid"`
+	TKey          string 	`json:"typeform_key"`
+	EmailField    string 	`json:"typeform_email_field"`
+	NameField     string 	`json:"typeform_name_field"`
+	LastNameField string 	`json:"typeform_lastname_field"`
+	SlackChannel  string 	`json:"slack_channel_name"`
+	SlackToken    string 	`json:"slack_token_name"`
+	Interval      int64 	`json:"check_interval"`
+	ListenPort    string 	`json:"http_port"`
+	IPAddr        string 	`json:"bind_addr"`
 }
 
 type Response struct {
 	Id string
 	Answers map[string] string
 }
+
 type Answer struct {
 	Responses []Response
 }
@@ -35,8 +37,8 @@ type Answer struct {
 
 func inviteAll(config Config){
 	log.Println("inviteAll")
-	typeFormUrl := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix() - config.Interval)
-	res, err := http.Get(typeFormUrl)
+	typeFormURL := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix() - config.Interval)
+	res, err := http.Get(typeFormURL)
 
 	if err != nil {
 		log.Panic(err)
@@ -56,7 +58,7 @@ func inviteAll(config Config){
 
 	for _, user := range answer.Responses {
 		log.Println("Sending invite to %s %s with email %s", user.Answers[config.NameField], user.Answers[config.LastNameField], user.Answers[config.EmailField])
-		slackUrl := fmt.Sprintf("https://%s.slack.com/api/users.admin.invite", config.SlackChannel)
+		slackURL := fmt.Sprintf("https://%s.slack.com/api/users.admin.invite", config.SlackChannel)
 
 		invite := url.Values{}
 		invite.Add("email", user.Answers[config.EmailField])
@@ -65,7 +67,7 @@ func inviteAll(config Config){
 		invite.Add("token", config.SlackToken)
 		invite.Add("set_active", "true")
 
-		req, err := http.NewRequest("POST", slackUrl, strings.NewReader(invite.Encode()))
+		req, err := http.NewRequest("POST", slackURL, strings.NewReader(invite.Encode()))
 		if err != nil {
 			log.Panic(err)
 		}
@@ -101,8 +103,13 @@ func main()  {
 		}
 	}()
 
-	http.Handle("/", http.FileServer(http.Dir("public")))
-	listenAddr := fmt.Sprintf("%s:%s", config.IpAddr, config.ListenPort)
+	http.HandleFunc("/", mainPage)
+	listenAddr := fmt.Sprintf("%s:%s", config.IPAddr, config.ListenPort)
 	fmt.Println(listenAddr)
 	http.ListenAndServe(listenAddr, nil)
+}
+
+func mainPage(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("public/index.html", nil)  // Parse template file.
+	t.Execute(w, "GGGGG")
 }
