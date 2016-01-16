@@ -1,35 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"time"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
 	"html/template"
-	"strings"
-	"net/url"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 // Config used for service configuration
 type Config struct {
-	TUID          string 	`json:"typeform_uid"`
-	TKey          string 	`json:"typeform_key"`
-	EmailField    string 	`json:"typeform_email_field"`
-	NameField     string 	`json:"typeform_name_field"`
-	LastNameField string 	`json:"typeform_lastname_field"`
-	SlackChannel  string 	`json:"slack_channel_name"`
-	SlackToken    string 	`json:"slack_token_name"`
-	Interval      int64 	`json:"check_interval"`
-	ListenPort    string 	`json:"http_port"`
-	IPAddr        string 	`json:"bind_addr"`
+	TUID          string `json:"typeform_uid"`
+	TKey          string `json:"typeform_key"`
+	EmailField    string `json:"typeform_email_field"`
+	NameField     string `json:"typeform_name_field"`
+	LastNameField string `json:"typeform_lastname_field"`
+	SlackChannel  string `json:"slack_channel_name"`
+	SlackToken    string `json:"slack_token_name"`
+	Interval      int64  `json:"check_interval"`
+	ListenPort    string `json:"http_port"`
+	IPAddr        string `json:"bind_addr"`
 }
 
 // Response stores Answers for invite sending
 type Response struct {
-	ID string
-	Answers map[string] string
+	ID      string
+	Answers map[string]string
 }
 
 // Answer is for parsing json response from typeform
@@ -37,9 +37,9 @@ type Answer struct {
 	Responses []Response
 }
 
-func inviteAll(config Config){
+func inviteAll(config Config) {
 	log.Println("inviteAll")
-	typeFormURL := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix() - config.Interval)
+	typeFormURL := fmt.Sprintf("https://api.typeform.com/v0/form/%s?key=%s&completed=true&since=%d", config.TUID, config.TKey, time.Now().Unix()-config.Interval)
 	res, err := http.Get(typeFormURL)
 
 	if err != nil {
@@ -86,7 +86,7 @@ func inviteAll(config Config){
 	}
 }
 
-func main()  {
+func main() {
 	dat, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		log.Panic("Failed to open file config.json")
@@ -100,12 +100,12 @@ func main()  {
 	}
 
 	go func() {
-		for _ = range time.Tick(time.Duration(config.Interval) * time.Second) {
+		for range time.Tick(time.Duration(config.Interval) * time.Second) {
 			inviteAll(config)
 		}
 	}()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		mainPage(w, r, config.TUID)
 	})
 	listenAddr := fmt.Sprintf("%s:%s", config.IPAddr, config.ListenPort)
@@ -114,7 +114,7 @@ func main()  {
 }
 
 func mainPage(w http.ResponseWriter, r *http.Request, UID string) {
-	data := make(map[string] string)
+	data := make(map[string]string)
 	data["UID"] = UID
 	t, _ := template.ParseFiles("public/index.html")
 	t.Execute(w, data)
