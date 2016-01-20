@@ -1,4 +1,5 @@
 # slack-typegorm
+[![Go Report Card](http://goreportcard.com/badge/gen1us2k/slack-typeform)](http://goreportcard.com/report/gen1us2k/slack-typeform)
 Automate user addition into slack via typeform
 
 Installation
