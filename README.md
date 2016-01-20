@@ -26,6 +26,6 @@ https://api.typeform.com/v0/form/UID?key=key&completed=true
 
 License
 ===
-Licensed under WTFPL
+Licensed under MIT
 
 Feel free for pull requests, issues or any feedback
